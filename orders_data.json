@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-18T06:40:33Z",
+  "generated_at": "2026-05-18T06:41:50Z",
   "orders": [
     {
       "order_number": 2,
@@ -8,10 +8,10 @@
       "youtube_name": "@mcdoinky_",
       "item_name": "Aiden",
       "clams_spent": 1000,
-      "status": "pending",
+      "status": "rejected",
       "notes": "",
       "created_at": "2026-05-18 06:40 UTC",
-      "resolved_at": ""
+      "resolved_at": "2026-05-18 06:41 UTC"
     },
     {
       "order_number": 1,
