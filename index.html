@@ -92,23 +92,37 @@
   }
   table {
     width: 100%;
+    min-width: 900px;
     border-collapse: collapse;
     font-size: 0.88rem;
+    table-layout: fixed;
   }
+  /* Column widths */
+  col.col-order   { width: 90px; }
+  col.col-buyer   { width: 180px; }
+  col.col-item    { width: 160px; }
+  col.col-clams   { width: 90px; }
+  col.col-status  { width: 110px; }
+  col.col-ordered { width: 170px; }
+  col.col-resolved{ width: 170px; }
+  col.col-notes   { width: auto; }
+
   thead {
     background: var(--surface);
     position: sticky;
-    top: 56px;
+    top: 57px; /* matches nav height */
     z-index: 10;
   }
   th {
-    padding: 12px 16px;
+    padding: 10px 12px;
     text-align: left;
     color: var(--muted);
-    font-size: 0.77rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.7px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     cursor: pointer;
     user-select: none;
     border-bottom: 1px solid var(--border);
@@ -123,11 +137,17 @@
   tr:hover td { background: rgba(119,164,198,0.06); }
 
   td {
-    padding: 12px 16px;
+    padding: 10px 12px;
     vertical-align: middle;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  td.wrap { white-space: normal; max-width: 220px; word-break: break-word; }
+  td.wrap {
+    white-space: normal;
+    overflow: visible;
+    word-break: break-word;
+  }
 
   .order-num { font-family: monospace; color: var(--primary); font-weight: 600; }
 
@@ -196,6 +216,16 @@
 
     <div class="table-wrap">
       <table id="orders-table">
+        <colgroup>
+          <col class="col-order"/>
+          <col class="col-buyer"/>
+          <col class="col-item"/>
+          <col class="col-clams"/>
+          <col class="col-status"/>
+          <col class="col-ordered"/>
+          <col class="col-resolved"/>
+          <col class="col-notes"/>
+        </colgroup>
         <thead>
           <tr>
             <th data-col="order_number">Order # <span class="sort-icon">↕</span></th>
