@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Order Dashboard — Nerfed Reflexes</title>
+<style>
+  :root {
+    --bg:      #020d1f;
+    --surface: #071428;
+    --card:    #0b1e3a;
+    --border:  #0f2a50;
+    --primary: #77a4c6;
+    --accent:  #042676;
+    --gold:    #FBBF24;
+    --text:    #e8f0f8;
+    --muted:   #7fa8c8;
+    --green:   #4ade80;
+    --red:     #f87171;
+    --radius:  8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-title   { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+  .nav-sub     { font-size: 0.82rem; color: var(--muted); }
+  .nav-spacer  { flex: 1; }
+  .nav-updated { font-size: 0.78rem; color: var(--muted); }
+
+  .container { max-width: 1300px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  /* ── SUMMARY CARDS ── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .sum-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .sum-value { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
+  .sum-label { font-size: 0.77rem; color: var(--muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.7px; }
+
+  /* ── FILTERS ── */
+  .filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  .filters input, .filters select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 8px 13px;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .filters input:focus, .filters select:focus { border-color: var(--primary); }
+  .filters input { flex: 1; min-width: 200px; }
+  .filter-label { font-size: 0.82rem; color: var(--muted); }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  thead {
+    background: var(--surface);
+    position: sticky;
+    top: 56px;
+    z-index: 10;
+  }
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--muted);
+    font-size: 0.77rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid var(--border);
+  }
+  th:hover { color: var(--primary); }
+  th .sort-icon { margin-left: 4px; opacity: 0.4; }
+  th.sorted .sort-icon { opacity: 1; color: var(--primary); }
+
+  tr { border-bottom: 1px solid var(--border); }
+  tr:last-child { border-bottom: none; }
+  tr:nth-child(even) td { background: rgba(11,30,58,0.5); }
+  tr:hover td { background: rgba(119,164,198,0.06); }
+
+  td {
+    padding: 12px 16px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  td.wrap { white-space: normal; max-width: 220px; word-break: break-word; }
+
+  .order-num { font-family: monospace; color: var(--primary); font-weight: 600; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge.pending   { background: rgba(251,191,36,0.12); color: var(--gold);  border: 1px solid rgba(251,191,36,0.25); }
+  .badge.fulfilled { background: rgba(74,222,128,0.12); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
+  .badge.rejected  { background: rgba(248,113,113,0.12); color: var(--red);  border: 1px solid rgba(248,113,113,0.25); }
+
+  .clams-cell { color: var(--gold); font-weight: 600; }
+
+  .empty-row td {
+    text-align: center;
+    padding: 48px;
+    color: var(--muted);
+  }
+
+  /* ── LOADING / ERROR ── */
+  #loading { text-align: center; padding: 80px; color: var(--muted); }
+  #err     { display:none; text-align:center; padding:60px; color:var(--red); }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div>
+    <div class="nav-title">📋 Order Dashboard</div>
+    <div class="nav-sub">Nerfed Reflexes — Owner View</div>
+  </div>
+  <div class="nav-spacer"></div>
+  <div class="nav-updated" id="nav-updated">Loading...</div>
+</nav>
+
+<div class="container">
+  <div id="loading">Loading order data...</div>
+  <div id="err">Failed to load orders. Please try again later.</div>
+
+  <div id="main" style="display:none">
+
+    <div class="summary-grid" id="summary-grid"></div>
+
+    <div class="filters">
+      <span class="filter-label">Filter:</span>
+      <input type="text" id="search" placeholder="Search name, item, order #..."/>
+      <select id="status-filter">
+        <option value="">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="fulfilled">Fulfilled</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table id="orders-table">
+        <thead>
+          <tr>
+            <th data-col="order_number">Order # <span class="sort-icon">↕</span></th>
+            <th data-col="display_name">Buyer <span class="sort-icon">↕</span></th>
+            <th data-col="item_name">Item <span class="sort-icon">↕</span></th>
+            <th data-col="clams_spent">Clams <span class="sort-icon">↕</span></th>
+            <th data-col="status">Status <span class="sort-icon">↕</span></th>
+            <th data-col="created_at">Ordered <span class="sort-icon">↕</span></th>
+            <th data-col="resolved_at">Resolved <span class="sort-icon">↕</span></th>
+            <th data-col="notes">Notes <span class="sort-icon">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="orders-body"></tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:12px; font-size:0.82rem; color:var(--muted)" id="row-count"></div>
+
+  </div>
+</div>
+
+<footer>Owner dashboard — Nerfed Reflexes Bot &mdash; Data refreshes on every order event and daily backup.</footer>
+
+<script>
+const DATA_URL = 'orders_data.json';
+
+let allOrders  = [];
+let sortCol    = 'order_number';
+let sortDir    = -1; // -1 = DESC (newest first)
+
+function fmt(n) { return Number(n).toLocaleString(); }
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function timeSince(isoStr) {
+  if (!isoStr) return '';
+  const d = new Date(isoStr);
+  const mins = Math.round((Date.now() - d) / 60000);
+  if (mins < 60)   return `${mins}m ago`;
+  if (mins < 1440) return `${Math.round(mins/60)}h ago`;
+  return `${Math.round(mins/1440)}d ago`;
+}
+
+async function loadOrders() {
+  try {
+    const res = await fetch(DATA_URL + '?v=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('main').style.display    = '';
+
+    document.getElementById('nav-updated').textContent =
+      data.generated_at ? 'Updated ' + timeSince(data.generated_at) : '';
+
+    allOrders = data.orders || [];
+
+    // Summary
+    const total     = allOrders.length;
+    const pending   = allOrders.filter(o => o.status === 'pending').length;
+    const fulfilled = allOrders.filter(o => o.status === 'fulfilled').length;
+    const rejected  = allOrders.filter(o => o.status === 'rejected').length;
+    const clamsSpent = allOrders
+      .filter(o => o.status !== 'rejected')
+      .reduce((s, o) => s + (o.clams_spent || 0), 0);
+
+    const sg = document.getElementById('summary-grid');
+    [
+      { label: 'Total Orders',   value: fmt(total) },
+      { label: 'Pending',        value: pending,   cls: pending > 0 ? 'color:var(--gold)' : '' },
+      { label: 'Fulfilled',      value: fulfilled },
+      { label: 'Rejected',       value: rejected },
+      { label: 'Clams Spent',    value: fmt(clamsSpent) + ' 🐚' },
+    ].forEach(s => {
+      const c = document.createElement('div');
+      c.className = 'sum-card';
+      c.innerHTML = `<div class="sum-value" style="${s.cls||''}">${s.value}</div><div class="sum-label">${s.label}</div>`;
+      sg.appendChild(c);
+    });
+
+    // Sorting headers
+    document.querySelectorAll('th[data-col]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (sortCol === col) { sortDir *= -1; }
+        else { sortCol = col; sortDir = 1; }
+        renderTable();
+        document.querySelectorAll('th').forEach(h => h.classList.remove('sorted'));
+        th.classList.add('sorted');
+        th.querySelector('.sort-icon').textContent = sortDir === 1 ? '↑' : '↓';
+      });
+    });
+
+    // Filters
+    document.getElementById('search').addEventListener('input', renderTable);
+    document.getElementById('status-filter').addEventListener('change', renderTable);
+
+    renderTable();
+
+  } catch(err) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('err').style.display     = '';
+    console.error(err);
+  }
+}
+
+function renderTable() {
+  const search  = document.getElementById('search').value.toLowerCase();
+  const statusF = document.getElementById('status-filter').value;
+
+  let rows = allOrders.filter(o => {
+    if (statusF && o.status !== statusF) return false;
+    if (search) {
+      const hay = [
+        o.order_number, o.display_name, o.youtube_name,
+        o.discord_id, o.item_name, o.notes, o.status
+      ].join(' ').toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  // Sort
+  rows = rows.slice().sort((a, b) => {
+    let av = a[sortCol] ?? '';
+    let bv = b[sortCol] ?? '';
+    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir;
+    return String(av).localeCompare(String(bv)) * sortDir;
+  });
+
+  const tbody = document.getElementById('orders-body');
+  tbody.innerHTML = '';
+
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No orders match your filters.</td></tr>';
+    document.getElementById('row-count').textContent = '';
+    return;
+  }
+
+  rows.forEach(o => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="order-num">#${String(o.order_number).padStart(4,'0')}</td>
+      <td>${esc(o.display_name)}<br><span style="color:var(--muted);font-size:0.75rem">${esc(o.discord_id)}</span></td>
+      <td class="wrap">${esc(o.item_name)}</td>
+      <td class="clams-cell">${fmt(o.clams_spent)} 🐚</td>
+      <td><span class="badge ${esc(o.status)}">${esc(o.status)}</span></td>
+      <td>${esc(o.created_at)}</td>
+      <td>${esc(o.resolved_at) || '<span style="color:var(--muted)">—</span>'}</td>
+      <td class="wrap">${esc(o.notes) || '<span style="color:var(--muted)">—</span>'}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('row-count').textContent =
+    `Showing ${rows.length} of ${allOrders.length} orders`;
+}
+
+loadOrders();
+</script>
+</body>
+</html>
