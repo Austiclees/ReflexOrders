@@ -344,21 +344,55 @@ function renderTable() {
 
   rows.forEach(o => {
     const tr = document.createElement('tr');
-    const resolvedCell = (o.resolved_at && o.resolved_at !== 'null' && o.resolved_at !== '')
-      ? esc(o.resolved_at)
-      : '<span style="color:var(--muted)">—</span>';
-    const notesCell = (o.notes && o.notes !== 'null' && o.notes !== '')
-      ? esc(o.notes)
-      : '<span style="color:var(--muted)">—</span>';
-    tr.innerHTML = `
-      <td class="order-num">#${String(o.order_number).padStart(4,'0')}</td>
-      <td>${esc(o.display_name)}<br><span style="color:var(--muted);font-size:0.75rem">${esc(o.discord_id)}</span></td>
-      <td class="wrap">${esc(o.item_name)}</td>
-      <td class="clams-cell">${fmt(o.clams_spent)} 🐚</td>
-      <td><span class="badge ${esc(o.status)}">${esc(o.status)}</span></td>
-      <td>${esc(o.created_at)}</td>
-      <td>${resolvedCell}</td>
-      <td class="wrap">${notesCell}</td>`;
+
+    function td(text, cls) {
+      const cell = document.createElement('td');
+      if (cls) cell.className = cls;
+      cell.textContent = String(text || '');
+      return cell;
+    }
+    function tdHtml(html, cls) {
+      const cell = document.createElement('td');
+      if (cls) cell.className = cls;
+      cell.innerHTML = html;
+      return cell;
+    }
+    const isEmpty = v => !v || v === 'null' || v === '';
+    const dash = '<span style="color:var(--muted)">—</span>';
+
+    // Order number
+    tr.appendChild(tdHtml(`<span class="order-num">#${String(o.order_number).padStart(4,'0')}</span>`));
+
+    // Buyer
+    const buyerCell = document.createElement('td');
+    const nameNode = document.createTextNode(o.display_name || '');
+    const idSpan = document.createElement('span');
+    idSpan.style.cssText = 'color:var(--muted);font-size:0.75rem;display:block';
+    idSpan.textContent = o.discord_id || '';
+    buyerCell.appendChild(nameNode);
+    buyerCell.appendChild(idSpan);
+    tr.appendChild(buyerCell);
+
+    // Item, Clams
+    tr.appendChild(td(o.item_name, 'wrap'));
+    const clamsCell = document.createElement('td');
+    clamsCell.className = 'clams-cell';
+    clamsCell.textContent = fmt(o.clams_spent) + ' 🐚';
+    tr.appendChild(clamsCell);
+
+    // Status badge
+    const statusCell = document.createElement('td');
+    const badge = document.createElement('span');
+    badge.className = 'badge ' + (o.status || '');
+    badge.textContent = o.status || '';
+    statusCell.appendChild(badge);
+    tr.appendChild(statusCell);
+
+    // Ordered, Resolved, Notes
+    tr.appendChild(tdHtml(isEmpty(o.created_at)  ? dash : esc(o.created_at)));
+    tr.appendChild(tdHtml(isEmpty(o.resolved_at) ? dash : esc(o.resolved_at)));
+    tr.appendChild(tdHtml(isEmpty(o.notes)       ? dash : esc(o.notes), 'wrap'));
+
     tbody.appendChild(tr);
   });
 
