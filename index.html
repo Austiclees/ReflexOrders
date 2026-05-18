@@ -338,6 +338,12 @@ function renderTable() {
 
   rows.forEach(o => {
     const tr = document.createElement('tr');
+    const resolvedCell = (o.resolved_at && o.resolved_at !== 'null' && o.resolved_at !== '')
+      ? esc(o.resolved_at)
+      : '<span style="color:var(--muted)">—</span>';
+    const notesCell = (o.notes && o.notes !== 'null' && o.notes !== '')
+      ? esc(o.notes)
+      : '<span style="color:var(--muted)">—</span>';
     tr.innerHTML = `
       <td class="order-num">#${String(o.order_number).padStart(4,'0')}</td>
       <td>${esc(o.display_name)}<br><span style="color:var(--muted);font-size:0.75rem">${esc(o.discord_id)}</span></td>
@@ -345,8 +351,8 @@ function renderTable() {
       <td class="clams-cell">${fmt(o.clams_spent)} 🐚</td>
       <td><span class="badge ${esc(o.status)}">${esc(o.status)}</span></td>
       <td>${esc(o.created_at)}</td>
-      <td>${esc(o.resolved_at) || '<span style="color:var(--muted)">—</span>'}</td>
-      <td class="wrap">${esc(o.notes) || '<span style="color:var(--muted)">—</span>'}</td>`;
+      <td>${resolvedCell}</td>
+      <td class="wrap">${notesCell}</td>`;
     tbody.appendChild(tr);
   });
 
