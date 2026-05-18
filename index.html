@@ -323,6 +323,12 @@ function renderTable() {
   rows = rows.slice().sort((a, b) => {
     let av = a[sortCol] ?? '';
     let bv = b[sortCol] ?? '';
+    // Treat null/empty as lowest value so they sort to bottom
+    const aEmpty = (av === null || av === '' || av === 'null');
+    const bEmpty = (bv === null || bv === '' || bv === 'null');
+    if (aEmpty && bEmpty) return 0;
+    if (aEmpty) return 1;
+    if (bEmpty) return -1;
     if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir;
     return String(av).localeCompare(String(bv)) * sortDir;
   });
