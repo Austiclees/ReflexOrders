@@ -1,41 +1,4 @@
 {
-  "generated_at": "2026-05-18T08:00:34Z",
-  "orders": [
-    {
-      "order_number": 3,
-      "display_name": "McDoinky",
-      "discord_id": "357374727922122773",
-      "youtube_name": "@mcdoinky_",
-      "item_name": "Aiden",
-      "clams_spent": 1000,
-      "status": "fulfilled",
-      "notes": "",
-      "created_at": "2026-05-18 06:42 UTC",
-      "resolved_at": "2026-05-18 07:26 UTC"
-    },
-    {
-      "order_number": 2,
-      "display_name": "McDoinky",
-      "discord_id": "357374727922122773",
-      "youtube_name": "@mcdoinky_",
-      "item_name": "Aiden",
-      "clams_spent": 1000,
-      "status": "rejected",
-      "notes": "",
-      "created_at": "2026-05-18 06:40 UTC",
-      "resolved_at": "2026-05-18 06:41 UTC"
-    },
-    {
-      "order_number": 1,
-      "display_name": "McDoinky",
-      "discord_id": "357374727922122773",
-      "youtube_name": "@mcdoinky_",
-      "item_name": "Test item",
-      "clams_spent": 10,
-      "status": "fulfilled",
-      "notes": "",
-      "created_at": "2026-05-18 06:39 UTC",
-      "resolved_at": ""
-    }
-  ]
+  "generated_at": "2026-05-18T09:36:31Z",
+  "orders": []
 }
