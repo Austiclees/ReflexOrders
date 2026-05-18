@@ -55,30 +55,35 @@
 
   /* ── SECTION NAV ── */
   .section-nav {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    background: #0a1e3d;
+    border-bottom: 2px solid var(--primary);
     padding: 0 32px;
     display: flex;
     gap: 4px;
     overflow-x: auto;
     scrollbar-width: none;
     position: sticky;
-    top: 57px;
+    top: 0; /* JS will update this to match the top-nav height */
     z-index: 99;
   }
   .section-nav::-webkit-scrollbar { display: none; }
   .section-nav a {
     display: inline-block;
-    padding: 11px 16px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--muted);
+    padding: 12px 18px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--primary);
     text-decoration: none;
     white-space: nowrap;
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    letter-spacing: 0.3px;
   }
-  .section-nav a:hover { color: var(--primary); border-bottom-color: var(--primary); }
+  .section-nav a:hover {
+    color: #fff;
+    border-bottom-color: var(--primary);
+    background: rgba(119,164,198,0.08);
+  }
 
   /* scroll offset so sticky navs don't cover section headings */
   .scroll-anchor {
@@ -416,6 +421,24 @@ async function loadShop() {
 }
 
 loadShop();
+
+// Set section nav top position to match actual top-nav height
+// so it sticks correctly regardless of browser/zoom
+function positionSectionNav() {
+  const topNav     = document.querySelector('.top-nav');
+  const sectionNav = document.querySelector('.section-nav');
+  if (topNav && sectionNav) {
+    const h = topNav.getBoundingClientRect().height;
+    sectionNav.style.top = h + 'px';
+    // Also update the scroll anchor offset CSS variable
+    document.documentElement.style.setProperty(
+      '--nav-h', (h + sectionNav.getBoundingClientRect().height) + 'px'
+    );
+  }
+}
+
+positionSectionNav();
+window.addEventListener('resize', positionSectionNav);
 </script>
 </body>
 </html>
